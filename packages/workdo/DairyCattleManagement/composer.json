@@ -1,0 +1,25 @@
+{
+    "name": "workdo/dairy-cattle-management",
+    "description": "Description for dairy-cattle-management package",
+    "type": "library",
+    "license": "MIT",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Workdo\\DairyCattleManagement\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "WorkDo",
+            "email": "support@workdo.io"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Workdo\\DairyCattleManagement\\Providers\\DairyCattleManagementServiceProvider"
+            ]
+        }
+    }
+}

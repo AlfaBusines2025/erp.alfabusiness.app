@@ -1,0 +1,28 @@
+{
+    "name": "workdo/calender",
+    "description": "Description for calender package",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "spatie/laravel-google-calendar": "^3.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Workdo\\Calender\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "WorkDo",
+            "email": "support@workdo.io"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Workdo\\Calender\\Providers\\CalenderServiceProvider",
+                "Workdo\\Calender\\Providers\\ViewComposer"
+            ]
+        }
+    }
+}
