@@ -19,7 +19,7 @@ class DashboardController extends Controller
 {
     public function __construct()
     {
-        if(module_is_active('GoogleAuthentication')) {
+        if (module_is_active('GoogleAuthentication')) {
             $this->middleware('2fa');
         }
     }
@@ -27,64 +27,64 @@ class DashboardController extends Controller
     public function index()
     {
         // 1) Verificar permiso
-        if(!Auth::user()->isAbleTo('taskly dashboard manage')) {
+        if (!Auth::user()->isAbleTo('taskly dashboard manage')) {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
 
         // 2) Usuario y Workspace
         $userObj          = Auth::user();
-        $currentWorkspace = getActiveWorkSpace();  
-        
+        $currentWorkspace = getActiveWorkSpace();
+
         // Asegurarnos de tener el ID numérico del workspace.
-        $workspaceID = is_object($currentWorkspace) 
-            ? $currentWorkspace->id 
+        $workspaceID = is_object($currentWorkspace)
+            ? $currentWorkspace->id
             : $currentWorkspace;
 
         // --------------------------------------------
-        // 3) LÓGICA PARA CÁLCULO DE DÍAS RESTANTES DE STOCK
-        // --------------------------------------------
-        $past30Days = Carbon::now()->subDays(30); // Ajusta el rango si quieres
-        $today      = Carbon::now();
+		// 3) LÓGICA PARA CÁLCULO DE DÍAS RESTANTES DE STOCK
+		// --------------------------------------------
+		$past30Days = Carbon::now()->subDays(30); // Ajusta el rango si quieres
+		$today      = Carbon::now();
 
-        // Obtenemos los productos (tipos de comida) del workspace
-        $feeds = DB::table('product_services')
-            ->where('workspace_id', $workspaceID)
-            ->get();
+		// Obtenemos los productos (tipos de comida) del workspace
+		$feeds = DB::table('product_services')
+			->where('workspace_id', $workspaceID)
+			->get();
 
-        $daysLeftLabels = [];  // para labels del gráfico
-        $daysLeftSeries = [];  // para valores del gráfico
-        $feedDaysLeft   = [];  // para detalle en la tabla
+		$daysLeftLabels = [];  // para labels del gráfico
+		$daysLeftSeries = [];  // para valores del gráfico
+		$feedDaysLeft   = [];  // para detalle en la tabla
 
-        foreach($feeds as $feed)
-        {
-            // Sumamos cuánta cantidad se ha consumido en los últimos 30 días
-            $feedConsumption = DB::table('feed_consumptions')
-                ->where('feed_type_id', $feed->id)
-                ->where('workspace', $workspaceID)
-                ->whereBetween('consumption_date', [$past30Days, $today])
-                ->sum('quantity_consumed');
+		foreach ($feeds as $feed) {
+			// Sumamos cuánta cantidad se ha programado en los últimos 30 días
+			$feedSchedule = DB::table('feed_schedules')
+				->where('feed_type_id', $feed->id)
+				->where('workspace', $workspaceID)
+				->whereBetween('scheduled_time', [$past30Days, $today])
+				->sum('quantity');
 
-            // Promedio diario de consumo (evitando división por cero)
-            $dailyAvg = ($feedConsumption > 0) ? ($feedConsumption / 30) : 0;
+			// Promedio diario de programación (evitando división por cero)
+			$dailyAvg = ($feedSchedule > 0) ? ($feedSchedule / 30) : 0;
 
-            // Días restantes = stock actual / consumo diario
-            $daysLeft = ($dailyAvg <= 0)
-                ? 0
-                : floor($feed->quantity / $dailyAvg);
+			// Días restantes = stock actual / consumo diario
+			$daysLeft = ($dailyAvg <= 0)
+				? 0
+				: floor($feed->quantity / $dailyAvg);
 
-            // Agregamos a la tabla
-            $feedDaysLeft[] = [
-                'name'       => $feed->name,
-                'sku'        => $feed->sku,
-                'quantity'   => $feed->quantity,
-                'daily_avg'  => round($dailyAvg, 2),
-                'days_left'  => $daysLeft,
-            ];
+			// Agregamos a la tabla
+			$feedDaysLeft[] = [
+				'name'       => $feed->name,
+				'sku'        => $feed->sku,
+				'quantity'   => $feed->quantity,
+				'daily_avg'  => round($dailyAvg, 2),
+				'days_left'  => $daysLeft,
+			];
 
-            // Para el gráfico
-            $daysLeftLabels[] = $feed->name;
-            $daysLeftSeries[] = $daysLeft;
-        }
+			// Para el gráfico
+			$daysLeftLabels[] = $feed->name;
+			$daysLeftSeries[] = $daysLeft;
+		}
+
 
         // 4) Fechas y filtros para Programado vs Consumido
         $feedStartDate = request('feed_start_date', Carbon::today()->toDateString());
@@ -212,51 +212,50 @@ class DashboardController extends Controller
         $totaltasks      = 0;
         $arrProcessLabel = [];
         $arrProcessPer   = [];
-        $arrProcessClass = ['text-success','text-primary','text-danger'];
-        $chartData       = ['stages'=>[], 'label'=>[], 'color'=>[]];
+        $arrProcessClass = ['text-success', 'text-primary', 'text-danger'];
+        $chartData       = ['stages' => [], 'label' => [], 'color' => []];
         $totalMembers    = 0;
 
         // ¿Es "client"?
-        if(Auth::user()->hasRole('client'))
-        {
+        if (Auth::user()->hasRole('client')) {
             // LÓGICA CLIENT
-            $totalProject = ClientProject::join("projects","projects.id","=","client_projects.project_id")
-                ->where("client_id",$userObj->id)
-                ->where('projects.workspace',$workspaceID)
-                ->where('projects.type','project')
+            $totalProject = ClientProject::join("projects", "projects.id", "=", "client_projects.project_id")
+                ->where("client_id", $userObj->id)
+                ->where('projects.workspace', $workspaceID)
+                ->where('projects.type', 'project')
                 ->count();
 
-            $totalBugs = ClientProject::join("bug_reports","bug_reports.project_id","=","client_projects.project_id")
-                ->join("projects","projects.id","=","client_projects.project_id")
-                ->where('projects.workspace',$workspaceID)
-                ->where('projects.type','project')
+            $totalBugs = ClientProject::join("bug_reports", "bug_reports.project_id", "=", "client_projects.project_id")
+                ->join("projects", "projects.id", "=", "client_projects.project_id")
+                ->where('projects.workspace', $workspaceID)
+                ->where('projects.type', 'project')
                 ->count();
 
-            $totalTask = ClientProject::join("tasks","tasks.project_id","=","client_projects.project_id")
-                ->join("projects","projects.id","=","client_projects.project_id")
-                ->where('projects.workspace',$workspaceID)
-                ->where('projects.type','project')
-                ->where("client_id",$userObj->id)
+            $totalTask = ClientProject::join("tasks", "tasks.project_id", "=", "client_projects.project_id")
+                ->join("projects", "projects.id", "=", "client_projects.project_id")
+                ->where('projects.workspace', $workspaceID)
+                ->where('projects.type', 'project')
+                ->where("client_id", $userObj->id)
                 ->count();
 
-            if($doneStage){
-                $completeTask = ClientProject::join("tasks","tasks.project_id","=","client_projects.project_id")
-                    ->join("projects","projects.id","=","client_projects.project_id")
-                    ->where('projects.workspace',$workspaceID)
-                    ->where('projects.type','project')
-                    ->where("client_id",$userObj->id)
-                    ->where('tasks.status',$doneStage->id)
+            if ($doneStage) {
+                $completeTask = ClientProject::join("tasks", "tasks.project_id", "=", "client_projects.project_id")
+                    ->join("projects", "projects.id", "=", "client_projects.project_id")
+                    ->where('projects.workspace', $workspaceID)
+                    ->where('projects.type', 'project')
+                    ->where("client_id", $userObj->id)
+                    ->where('tasks.status', $doneStage->id)
                     ->count();
             }
 
-            $tasks = Task::select(['tasks.*','stages.name as status','stages.complete'])
-                ->join("client_projects","tasks.project_id","=","client_projects.project_id")
-                ->join("projects","projects.id","=","client_projects.project_id")
-                ->join("stages","stages.id","=","tasks.status")
-                ->where('projects.workspace',$workspaceID)
-                ->where("client_id",$userObj->id)
-                ->orderBy('tasks.id','desc')
-                ->where('projects.type','project')
+            $tasks = Task::select(['tasks.*', 'stages.name as status', 'stages.complete'])
+                ->join("client_projects", "tasks.project_id", "=", "client_projects.project_id")
+                ->join("projects", "projects.id", "=", "client_projects.project_id")
+                ->join("stages", "stages.id", "=", "tasks.status")
+                ->where('projects.workspace', $workspaceID)
+                ->where("client_id", $userObj->id)
+                ->orderBy('tasks.id', 'desc')
+                ->where('projects.type', 'project')
                 ->limit(7)
                 ->with('project')
                 ->get();
@@ -265,16 +264,16 @@ class DashboardController extends Controller
             $totalMembers = 0;
 
             // Proyectos por status
-            $projectProcess = ClientProject::join("projects","projects.id","=","client_projects.project_id")
-                ->where('projects.workspace',$workspaceID)
-                ->where('projects.type','project')
-                ->where("client_id",$userObj->id)
+            $projectProcess = ClientProject::join("projects", "projects.id", "=", "client_projects.project_id")
+                ->where('projects.workspace', $workspaceID)
+                ->where('projects.type', 'project')
+                ->where("client_id", $userObj->id)
                 ->groupBy('projects.status')
                 ->selectRaw('count(projects.id) as count, projects.status')
-                ->pluck('count','projects.status');
+                ->pluck('count', 'projects.status');
 
-            if(count($projectProcess) > 0) {
-                foreach($projectProcess as $label => $count) {
+            if (count($projectProcess) > 0) {
+                foreach ($projectProcess as $label => $count) {
                     $arrProcessLabel[] = $label;
                     $arrProcessPer[]   = ($totalProject == 0)
                         ? 0.00
@@ -290,70 +289,68 @@ class DashboardController extends Controller
                 'workspace_id' => $workspaceID,
                 'duration'     => 'week',
             ]);
-        }
-        else
-        {
+        } else {
             // LÓGICA NO CLIENT
-            $totalProject = UserProject::join("projects","projects.id","=","user_projects.project_id")
-                ->where("user_id",$userObj->id)
-                ->where('projects.workspace',$workspaceID)
-                ->where('projects.type','project')
+            $totalProject = UserProject::join("projects", "projects.id", "=", "user_projects.project_id")
+                ->where("user_id", $userObj->id)
+                ->where('projects.workspace', $workspaceID)
+                ->where('projects.type', 'project')
                 ->count();
 
-            $totalBugs = UserProject::join("bug_reports","bug_reports.project_id","=","user_projects.project_id")
-                ->join("projects","projects.id","=","user_projects.project_id")
-                ->where("user_id",$userObj->id)
-                ->where('projects.type','project')
-                ->where('projects.workspace',$workspaceID)
+            $totalBugs = UserProject::join("bug_reports", "bug_reports.project_id", "=", "user_projects.project_id")
+                ->join("projects", "projects.id", "=", "user_projects.project_id")
+                ->where("user_id", $userObj->id)
+                ->where('projects.type', 'project')
+                ->where('projects.workspace', $workspaceID)
                 ->count();
 
-            $totalTaskQuery = UserProject::join("tasks","tasks.project_id","=","user_projects.project_id")
-                ->join("projects","projects.id","=","user_projects.project_id")
-                ->where("user_id",$userObj->id)
-                ->where('projects.type','project');
+            $totalTaskQuery = UserProject::join("tasks", "tasks.project_id", "=", "user_projects.project_id")
+                ->join("projects", "projects.id", "=", "user_projects.project_id")
+                ->where("user_id", $userObj->id)
+                ->where('projects.type', 'project');
 
-            if(!Auth::user()->hasRole('client') && !Auth::user()->hasRole('company')) {
-                if(isset($userObj) && $userObj) {
+            if (!Auth::user()->hasRole('client') && !Auth::user()->hasRole('company')) {
+                if (isset($userObj) && $userObj) {
                     $totalTaskQuery->whereRaw("find_in_set('" . $userObj->id . "',assign_to)");
                 }
             }
             $totalTask = $totalTaskQuery->count();
 
-            $tasks = Task::select(['tasks.*','stages.name as status','stages.complete'])
-                ->join("user_projects","tasks.project_id","=","user_projects.project_id")
-                ->join("projects","projects.id","=","user_projects.project_id")
-                ->join("stages","stages.id","=","tasks.status")
-                ->where("user_id",$userObj->id)
-                ->where('projects.workspace',$workspaceID);
+            $tasks = Task::select(['tasks.*', 'stages.name as status', 'stages.complete'])
+                ->join("user_projects", "tasks.project_id", "=", "user_projects.project_id")
+                ->join("projects", "projects.id", "=", "user_projects.project_id")
+                ->join("stages", "stages.id", "=", "tasks.status")
+                ->where("user_id", $userObj->id)
+                ->where('projects.workspace', $workspaceID);
 
             if (!Auth::user()->hasRole('client') && !Auth::user()->hasRole('company')) {
-                if(isset($userObj) && $userObj) {
+                if (isset($userObj) && $userObj) {
                     $tasks->whereRaw("find_in_set('" . $userObj->id . "',assign_to)");
                 }
             }
-            $tasks = $tasks->orderBy('tasks.id','desc')
-                ->where('projects.type','project')
+            $tasks = $tasks->orderBy('tasks.id', 'desc')
+                ->where('projects.type', 'project')
                 ->limit(7)
                 ->with('project')
                 ->get();
 
             $totaltasks = $tasks->count();
 
-            if($doneStage) {
+            if ($doneStage) {
                 $completeTask = $tasks->where('status', $doneStage->name)->count();
             }
 
             // Proceso de proyectos
-            $projectProcess = UserProject::join("projects","projects.id","=","user_projects.project_id")
-                ->where("user_id",$userObj->id)
-                ->where('projects.workspace',$workspaceID)
-                ->where('projects.type','project')
+            $projectProcess = UserProject::join("projects", "projects.id", "=", "user_projects.project_id")
+                ->where("user_id", $userObj->id)
+                ->where('projects.workspace', $workspaceID)
+                ->where('projects.type', 'project')
                 ->groupBy('projects.status')
                 ->selectRaw('count(projects.id) as count, projects.status')
-                ->pluck('count','projects.status');
+                ->pluck('count', 'projects.status');
 
-            if(count($projectProcess) > 0) {
-                foreach($projectProcess as $label => $count) {
+            if (count($projectProcess) > 0) {
+                foreach ($projectProcess as $label => $count) {
                     $arrProcessLabel[] = $label;
                     $arrProcessPer[]   = ($totalProject == 0)
                         ? 0.00
@@ -375,14 +372,29 @@ class DashboardController extends Controller
         // 5) Retornar vista
         return view('taskly::index', compact(
             // Programado vs Consumido
-            'scheduledLabels','scheduledSeries',
-            'consumedLabels','consumedSeries',
-            'animalsList','foodTypesList',
-            'feedStartDate','feedEndDate','feedAnimalId','feedTypeId',
+            'scheduledLabels',
+            'scheduledSeries',
+            'consumedLabels',
+            'consumedSeries',
+            'animalsList',
+            'foodTypesList',
+            'feedStartDate',
+            'feedEndDate',
+            'feedAnimalId',
+            'feedTypeId',
 
             // Variables Taskly
-            'totalProject','totalBugs','totalTask','completeTask','tasks','totaltasks',
-            'arrProcessLabel','arrProcessPer','arrProcessClass','chartData','totalMembers',
+            'totalProject',
+            'totalBugs',
+            'totalTask',
+            'completeTask',
+            'tasks',
+            'totaltasks',
+            'arrProcessLabel',
+            'arrProcessPer',
+            'arrProcessClass',
+            'chartData',
+            'totalMembers',
             'currentWorkspace',
 
             // Variables nuevas del stock de alimento
