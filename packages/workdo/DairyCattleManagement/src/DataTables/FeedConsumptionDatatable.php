@@ -54,6 +54,12 @@ class FeedConsumptionDatatable extends DataTable
             ->join('feed_types', 'feed_types.id', 'feed_consumptions.feed_type_id')
             ->where('feed_consumptions.created_by', creatorId())
             ->where('feed_consumptions.workspace', getActiveWorkSpace());
+		
+		// Filtrar si existe el parámetro 'animal_id' en la URL 
+		if (request()->has('animal_id')) { 
+			$consumption->where('feed_consumptions.animal_id', request()->query('animal_id')); 
+		}
+		
         return $consumption;
     }
 

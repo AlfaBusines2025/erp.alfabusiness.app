@@ -25,7 +25,9 @@ class ProductServiceDataTable extends DataTable
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
-        $rowColumn = ['image', 'sale_price', 'purchase_price', 'tax_id', 'category_id', 'unit_id', 'quantity'];
+        // Definición de columnas a usar: se agrega 'consumed'
+        $rowColumn = ['image', 'sale_price', 'purchase_price', 'tax_id', 'category_id', 'unit_id', 'quantity', 'consumed'];
+
         $dataTable = (new EloquentDataTable($query))
             ->addIndexColumn()
             ->editColumn('image', function (ProductService $productService) {
@@ -35,13 +37,10 @@ class ProductServiceDataTable extends DataTable
                     $path = get_file($productService->image);
                 }
                 $html = '<a href="'. $path .'" target="_blank">
-                            <img src="' . $path . '" class="rounded border-2 border border-primary
-                            " style="width:100px;" id="blah3">
+                            <img src="' . $path . '" class="rounded border-2 border border-primary" style="width:100px;" id="blah3">
                         </a>';
-
                 return $html;
             })
-
             ->editColumn('sale_price', function (ProductService $productService) {
                 return currency_format_with_sym($productService->sale_price);
             })
@@ -70,19 +69,19 @@ class ProductServiceDataTable extends DataTable
             ->editColumn('unit_id', function (ProductService $productService) {
                 return optional($productService->units)->name ?? '';
             })
+            // La columna "quantity" mostrará el valor real (el accessor getQuantityAttribute se encarga de restar lo consumido)
             ->editColumn('quantity', function (ProductService $productService) {
-                if ($productService->type == 'product' || $productService->type == 'parts' || $productService->type == 'consignment' || $productService->type == 'rent' || $productService->type == 'music institute') {
-                    $quantity = $productService->quantity;
-                } else {
-                    $quantity = '-';
-                }
-                return $quantity;
+                return $productService->quantity;
+            })
+            // Nueva columna: "consumed" muestra lo consumido
+            ->addColumn('consumed', function (ProductService $productService) {
+                return $productService->getTotalConsumed();
             });
+
         if (\Laratrust::hasPermission('product&service delete') || \Laratrust::hasPermission('product&service edit')) {
             $dataTable->addColumn('action', function (ProductService $productService) {
                 return view('product-service::action', compact('productService'));
             });
-
             $rowColumn[] = 'action';
         }
         return $dataTable->rawColumns($rowColumn);
@@ -108,6 +107,7 @@ class ProductServiceDataTable extends DataTable
         if (!empty($request->item_type)) {
             $productServices = $productServices->where('product_services.type', $request->item_type);
         }
+		
         $productServices = $productServices->with(['categorys', 'units']);
 
         return $productServices;
@@ -124,10 +124,10 @@ class ProductServiceDataTable extends DataTable
             ->ajax([
                 'data' => 'function(d) {
                     var item_type = $("select[name=item_type]").val();
-                    d.item_type = item_type
+                    d.item_type = item_type;
 
                     var category = $("select[name=category]").val();
-                    d.category = category
+                    d.category = category;
                 }',
             ])
             ->orderBy(0)
@@ -144,25 +144,21 @@ class ProductServiceDataTable extends DataTable
             ->initComplete('function() {
                 var table = this;
                 $("body").on("click", "#applyfilter", function() {
-
                     if (!$("select[name=item_type]").val() && !$("select[name=category]").val()) {
                         toastrs("Error!", "Please select Atleast One Filter ", "error");
                         return;
                     }
-
                     $("#product-service-table").DataTable().draw();
                 });
-
                 $("body").on("click", "#clearfilter", function() {
-                    $("select[name=item_type]").val("")
-                    $("select[name=category]").val("")
+                    $("select[name=item_type]").val("");
+                    $("select[name=category]").val("");
                     $("#product-service-table").DataTable().draw();
                 });
-
                 var searchInput = $(\'#\'+table.api().table().container().id+\' label input[type="search"]\');
-                searchInput.removeClass(\'form-control form-control-sm\');
-                searchInput.addClass(\'dataTable-input\');
-                var select = $(table.api().table().container()).find(".dataTables_length select").removeClass(\'custom-select custom-select-sm form-control form-control-sm\').addClass(\'dataTable-selector\');
+                searchInput.removeClass("form-control form-control-sm");
+                searchInput.addClass("dataTable-input");
+                var select = $(table.api().table().container()).find(".dataTables_length select").removeClass("custom-select custom-select-sm form-control form-control-sm").addClass("dataTable-selector");
             }');
 
         $exportButtonConfig = [
@@ -212,20 +208,20 @@ class ProductServiceDataTable extends DataTable
             "drawCallback" => 'function( settings ) {
                 var tooltipTriggerList = [].slice.call(
                     document.querySelectorAll("[data-bs-toggle=tooltip]")
-                  );
-                  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                );
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                     return new bootstrap.Tooltip(tooltipTriggerEl);
-                  });
-                  var popoverTriggerList = [].slice.call(
+                });
+                var popoverTriggerList = [].slice.call(
                     document.querySelectorAll("[data-bs-toggle=popover]")
-                  );
-                  var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+                );
+                var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
                     return new bootstrap.Popover(popoverTriggerEl);
-                  });
-                  var toastElList = [].slice.call(document.querySelectorAll(".toast"));
-                  var toastList = toastElList.map(function (toastEl) {
+                });
+                var toastElList = [].slice.call(document.querySelectorAll(".toast"));
+                var toastList = toastElList.map(function (toastEl) {
                     return new bootstrap.Toast(toastEl);
-                  });
+                });
             }'
         ]);
 
@@ -261,12 +257,13 @@ class ProductServiceDataTable extends DataTable
             Column::make('category_id')->title(__('Category')),
             Column::make('unit_id')->title(__('Unit')),
             Column::make('quantity')->title(__('Quantity')),
+            // Nueva columna para mostrar lo consumido
+            Column::make('consumed')->title(__('Consumed')),
             Column::make('type')->title(__('Type')),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
                 ->width(60)
-                
         ];
     }
 

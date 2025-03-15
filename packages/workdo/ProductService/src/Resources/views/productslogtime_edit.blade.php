@@ -1,5 +1,6 @@
 {{ Form::model($partslogtime, ['route' => ['productslogtime.update', $partslogtime->id], 'method' => 'PUT']) }}
 <div class="modal-body">
+	
     <div class="text-end">
         @if (module_is_active('AIAssistant'))
             @include('aiassistant::ai.generate_ai_btn', [
@@ -10,7 +11,7 @@
     </div>
     <input type="hidden" name="product_id" value="{{ $partslogtime->product_id }}">
     <div class="row">
-
+		
         @if (Auth::user()->id == $partslogtime->created_by)
             <div class="col-md-12 form-group">
                 {{ Form::label('date', __('Date'), ['class' => 'form-label']) }}

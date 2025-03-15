@@ -61,6 +61,10 @@ class BirthRecordsDataTable extends DataTable
             ->join('animals', 'animals.id', 'birth_records.animal_id')
             ->where('birth_records.created_by', creatorId())
             ->where('birth_records.workspace', getActiveWorkSpace());
+		// Filtrar si existe el parámetro 'animal_id' en la URL 
+		if (request()->has('animal_id')) { 
+			$birth_records->where('birth_records.animal_id', request()->query('animal_id')); 
+		}
         return $birth_records;
     }
 

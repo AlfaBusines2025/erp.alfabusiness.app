@@ -53,6 +53,12 @@ class HealthDataTable extends DataTable
             ->select('healths.*', 'animals.name as animal_name')
             ->where('healths.workspace', getActiveWorkSpace())
             ->where('healths.created_by', creatorId());
+		
+		// Verifica si existe el parámetro 'id_animal' en la URL y filtra la consulta
+		if (request()->has('animal_id')) {
+			$healths->where('healths.animal_id', request()->query('animal_id'));
+		}
+		
         return $healths;
     }
 

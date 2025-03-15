@@ -18,9 +18,12 @@ class FeedSchedulesDatatable extends DataTable
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
-        $rowColumn = ['animal_id','scheduled_time','feed_type_id'];
+        // Agregamos 'consumption_end' a las columnas que se procesarán en rawColumns
+        $rowColumn = ['animal_id', 'scheduled_time', 'feed_type_id', 'consumption_end'];
+
         $dataTable = (new EloquentDataTable($query))
             ->addIndexColumn();
+
         $dataTable = $dataTable->editColumn('animal_id', function ($row) {
             return ucwords($row->animal_name);
         });
@@ -30,6 +33,9 @@ class FeedSchedulesDatatable extends DataTable
         $dataTable = $dataTable->editColumn('feed_type_id', function ($row) {
             return ucwords($row->feed_type_name);
         });
+        $dataTable = $dataTable->editColumn('consumption_end', function ($row) {
+            return $row->consumption_end ? company_datetime_formate($row->consumption_end) : '';
+        });
 
         if (
             \Laratrust::hasPermission('feed schedule edit') ||
@@ -38,7 +44,6 @@ class FeedSchedulesDatatable extends DataTable
             $dataTable->addColumn('action', function (FeedSchedule $schedule) {
                 return view('dairy-cattle-management::feeds_schedule.action', compact('schedule'));
             });
-
             $rowColumn[] = 'action';
         }
         return $dataTable->rawColumns($rowColumn);
@@ -49,11 +54,21 @@ class FeedSchedulesDatatable extends DataTable
      */
     public function query(FeedSchedule $model): QueryBuilder
     {
-        $schedule = $model->select('feed_schedules.*', 'feed_types.name as feed_type_name', 'animals.name as animal_name')
+        $schedule = $model->select(
+                'feed_schedules.*',
+                'feed_types.name as feed_type_name',
+                'animals.name as animal_name'
+            )
             ->join('animals', 'animals.id', 'feed_schedules.animal_id')
             ->join('feed_types', 'feed_types.id', 'feed_schedules.feed_type_id')
             ->where('feed_schedules.created_by', creatorId())
             ->where('feed_schedules.workspace', getActiveWorkSpace());
+		
+        // Filtrar si existe el parámetro 'animal_id' en la URL 
+        if (request()->has('animal_id')) { 
+            $schedule->where('feed_schedules.animal_id', request()->query('animal_id')); 
+        }
+        
         return $schedule;
     }
 
@@ -94,19 +109,19 @@ class FeedSchedulesDatatable extends DataTable
                     'extend' => 'print',
                     'text' => '<i class="fas fa-print me-2"></i> ' . __('Print'),
                     'className' => 'btn btn-light text-primary dropdown-item',
-                    'exportOptions' => ['columns' => [0, 1, 3]],
+                    'exportOptions' => ['columns' => [0, 1, 3, 4]],
                 ],
                 [
                     'extend' => 'csv',
                     'text' => '<i class="fas fa-file-csv me-2"></i> ' . __('CSV'),
                     'className' => 'btn btn-light text-primary dropdown-item',
-                    'exportOptions' => ['columns' => [0, 1, 3]],
+                    'exportOptions' => ['columns' => [0, 1, 3, 4]],
                 ],
                 [
                     'extend' => 'excel',
                     'text' => '<i class="fas fa-file-excel me-2"></i> ' . __('Excel'),
                     'className' => 'btn btn-light text-primary dropdown-item',
-                    'exportOptions' => ['columns' => [0, 1, 3]],
+                    'exportOptions' => ['columns' => [0, 1, 3, 4]],
                 ],
             ],
         ];
@@ -176,6 +191,7 @@ class FeedSchedulesDatatable extends DataTable
             Column::make('feed_type_id')->title(__('Feed Type'))->name('feed_types.name'),
             Column::make('quantity')->title(__('Quantity')),
             Column::make('scheduled_time')->title(__('Scheduled Time')),
+            Column::make('consumption_end')->title(__('Consumption End')),
         ];
 
         if (
@@ -188,7 +204,6 @@ class FeedSchedulesDatatable extends DataTable
                     ->exportable(false)
                     ->printable(false)
                     ->width(60)
-                    
             ];
             $column = array_merge($column, $action);
         }

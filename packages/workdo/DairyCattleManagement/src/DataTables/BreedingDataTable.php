@@ -68,6 +68,12 @@ class BreedingDataTable extends DataTable
             ->select('breedings.*', 'animals.name as animal_name')
             ->where('breedings.workspace', getActiveWorkSpace())
             ->where('breedings.created_by', creatorId());
+		
+		// Filtrar si existe el parámetro 'animal_id' en la URL 
+		if (request()->has('animal_id')) { 
+			$breedings->where('breedings.animal_id', request()->query('animal_id')); 
+		}
+		
         return $breedings;
     }
 

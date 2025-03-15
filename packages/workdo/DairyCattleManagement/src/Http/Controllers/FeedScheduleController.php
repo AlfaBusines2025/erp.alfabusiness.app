@@ -36,9 +36,15 @@ class FeedScheduleController extends Controller
     public function create()
     {
         if (Auth::user()->isAbleTo('feed schedule create')) {
-            $animals = Animal::where('created_by',creatorId())->where('workspace',getActiveWorkSpace())->get()->pluck('name','id');
-            $feed_types = FeedType::where('created_by',creatorId())->where('workspace',getActiveWorkSpace())->get()->pluck('name','id');
-            return view('dairy-cattle-management::feeds_schedule.create',compact('animals','feed_types'));
+            $animals = Animal::where('created_by', creatorId())
+                        ->where('workspace', getActiveWorkSpace())
+                        ->get()
+                        ->pluck('name', 'id');
+            $feed_types = FeedType::where('created_by', creatorId())
+                        ->where('workspace', getActiveWorkSpace())
+                        ->get()
+                        ->pluck('name', 'id');
+            return view('dairy-cattle-management::feeds_schedule.create', compact('animals', 'feed_types'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
@@ -52,28 +58,30 @@ class FeedScheduleController extends Controller
     public function store(Request $request)
     {
         if (Auth::user()->isAbleTo('feed schedule create')) {
+
             $validator = \Validator::make(
                 $request->all(),
                 [
-                    'animal_id' => 'required',
-                    'feed_type_id' => 'required',
-                    'quantity' => 'required',
-                    'scheduled_time' => 'required',
+                    'animal_id'       => 'required',
+                    'feed_type_id'    => 'required',
+                    'quantity'        => 'required',
+                    'scheduled_time'  => 'required|date',
+                    'consumption_end' => 'nullable|date|after:scheduled_time',
                 ]
             );
             if ($validator->fails()) {
                 $messages = $validator->getMessageBag();
-
                 return redirect()->back()->with('error', $messages->first());
             }
 
-            $schedule                 = new FeedSchedule();
-            $schedule->animal_id      =  $request->animal_id;
-            $schedule->feed_type_id   =  $request->feed_type_id;
-            $schedule->quantity       =  $request->quantity;
-            $schedule->scheduled_time =  $request->scheduled_time;
-            $schedule->workspace      = getActiveWorkSpace();
-            $schedule->created_by     = creatorId();
+            $schedule = new FeedSchedule();
+            $schedule->animal_id       = $request->animal_id;
+            $schedule->feed_type_id    = $request->feed_type_id;
+            $schedule->quantity        = $request->quantity;
+            $schedule->scheduled_time  = $request->scheduled_time;
+            $schedule->consumption_end = $request->consumption_end; // Assign the new field
+            $schedule->workspace       = getActiveWorkSpace();
+            $schedule->created_by      = creatorId();
             $schedule->save();
 
             event(new CreateFeedSchedule($request, $schedule));
@@ -102,12 +110,15 @@ class FeedScheduleController extends Controller
     public function edit($id)
     {
         if (Auth::user()->isAbleTo('feed schedule edit')) {
-
             $schedule = FeedSchedule::find($id);
-            $animals = Animal::where('created_by',creatorId())->where('workspace',getActiveWorkSpace())->pluck('name','id');
-            $feed_types = FeedType::where('created_by',creatorId())->where('workspace',getActiveWorkSpace())->pluck('name','id');
+            $animals = Animal::where('created_by', creatorId())
+                        ->where('workspace', getActiveWorkSpace())
+                        ->pluck('name', 'id');
+            $feed_types = FeedType::where('created_by', creatorId())
+                        ->where('workspace', getActiveWorkSpace())
+                        ->pluck('name', 'id');
 
-            return view('dairy-cattle-management::feeds_schedule.edit', compact('schedule','animals','feed_types'));
+            return view('dairy-cattle-management::feeds_schedule.edit', compact('schedule', 'animals', 'feed_types'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
@@ -124,25 +135,26 @@ class FeedScheduleController extends Controller
         if (Auth::user()->isAbleTo('feed schedule edit')) {
 
             $rules = [
-                'animal_id' => 'required',
-                'feed_type_id' => 'required',
-                'quantity' => 'required',
-                'scheduled_time' => 'required',
+                'animal_id'       => 'required',
+                'feed_type_id'    => 'required',
+                'quantity'        => 'required',
+                'scheduled_time'  => 'required|date',
+                'consumption_end' => 'nullable|date|after:scheduled_time',
             ];
 
             $validator = \Validator::make($request->all(), $rules);
 
             if ($validator->fails()) {
                 $messages = $validator->getMessageBag();
-
                 return redirect()->back()->with('error', $messages->first());
             }
 
-            $schedule                 = FeedSchedule::find($id);
-            $schedule->animal_id      =  $request->animal_id;
-            $schedule->feed_type_id   =  $request->feed_type_id;
-            $schedule->quantity       =  $request->quantity;
-            $schedule->scheduled_time =  $request->scheduled_time;
+            $schedule = FeedSchedule::find($id);
+            $schedule->animal_id       = $request->animal_id;
+            $schedule->feed_type_id    = $request->feed_type_id;
+            $schedule->quantity        = $request->quantity;
+            $schedule->scheduled_time  = $request->scheduled_time;
+            $schedule->consumption_end = $request->consumption_end; // Update the new field
             $schedule->save();
 
             event(new UpdateFeedSchedule($request, $schedule));
@@ -161,7 +173,6 @@ class FeedScheduleController extends Controller
     public function destroy($id)
     {
         if (Auth::user()->isAbleTo('feed schedule delete')) {
-
             $schedule = FeedSchedule::find($id);
             event(new DestroyFeedSchedule($schedule));
             $schedule->delete();

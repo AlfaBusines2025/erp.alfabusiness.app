@@ -62,6 +62,12 @@ class VaccinationDatatable extends DataTable
             ->join('animals', 'animals.id', 'vaccinations.animal_id')
             ->where('vaccinations.created_by', creatorId())
             ->where('vaccinations.workspace', getActiveWorkSpace());
+		
+		// Filtrar si existe el parámetro 'animal_id' en la URL 
+		if (request()->has('animal_id')) { 
+			$vaccination->where('vaccinations.animal_id', request()->query('animal_id')); 
+		}
+		
         return $vaccination;
     }
 

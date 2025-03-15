@@ -1,5 +1,4 @@
-
-    <div class="row">
+<div class="row">
         <div class="col-sm-12">
             <div class="col-md-12 d-flex align-items-center justify-content-between justify-content-md-end mb-4">
                 <div class="col-md-6">
@@ -62,7 +61,7 @@
                                         {{ Form::label('sku', __('SKU'), ['class' => 'form-label']) }}<x-required></x-required>
                                         <div class="input-group">
                                             {{ Form::text('sku', !empty($productService->sku)?$productService->sku:'', ['class' => 'form-control','required' => 'required', 'placeholder' => __('Enter SKU')]) }}
-                                            <button class="btn btn-outline-primary" type="button" onclick="generateSKU()">{{__('Generate')}}</button>
+                                            <button class="btn btn-outline-primary" type="button" onclick="generateSKU()">{{('Generate')}}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -127,10 +126,11 @@
                                     {{ Form::select('unit_id', $unit, !empty($productService->unit_id)?$productService->unit_id:'', ['class' => 'form-control', 'required' => 'required']) }}
                                 </div>
 
-                                <div class="form-group col-md-6 quantity">
-                                    {{ Form::label('quantity', __('Quantity'), ['class' => 'form-label']) }}<x-required></x-required>
-                                    {{ Form::number('quantity', !empty($productService->quantity)?$productService->quantity:'0', ['class' => 'form-control', 'min' => '0','required' => 'required', 'placeholder' => __('Enter Quantity')]) }}
-                                </div>
+                                <div class="form-group col-md-6">
+    {{ Form::label('quantity', __('Quantity'), ['class' => 'form-label']) }}<x-required></x-required>
+    {{ Form::number('quantity', old('quantity', $productService->quantity ?? 0), ['id' => 'quantity', 'class' => 'form-control', 'min' => 0, 'required' => 'required', 'placeholder' => __('Enter Quantity')]) }}
+</div>
+
                             </div>
                             <div class="row mt-3">
                                 <div class="col-6">
@@ -214,4 +214,4 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>

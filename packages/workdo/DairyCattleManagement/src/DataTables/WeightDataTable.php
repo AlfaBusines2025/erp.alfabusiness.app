@@ -49,6 +49,11 @@ class WeightDataTable extends DataTable
             ->select('weights.*', 'animals.name as animal_name')
             ->where('weights.workspace', getActiveWorkSpace())
             ->where('weights.created_by', creatorId());
+		
+		// Filtrar si existe el parámetro 'id_animal' en la URL 
+		if (request()->has('animal_id')) { 
+			$weights->where('weights.animal_id', request()->query('animal_id')); 
+		}
 
         return $weights;
     }

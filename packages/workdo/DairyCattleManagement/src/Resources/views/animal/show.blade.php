@@ -79,58 +79,66 @@
                                     class="rounded me-3" style="width:256px;">
                             </a>
                         </div>
+						
                     </div>
 
-                    <!-- Acciones y listado de animal milk -->
-                    <div class="mt-2 row">
-                        <div class="col-md-12">
-                            <a class="mx-3 bg-warning btn btn-sm align-items-center" data-bs-toggle="tooltip"
-                                data-bs-placement="top" title="" data-ajax-popup="true" data-size="lg"
-                                data-title="Editar animales"
-                                data-url="https://erp.alfabusiness.app/animal/{!! $animal->id !!}/edit"
-                                data-bs-original-title="Editar" aria-label="Editar">
-                                <i class="text-white ti ti-pencil"></i> Editar a {!! !empty($animal->name) ? $animal->name : '--' !!}
-                            </a>
-                            <a class="btn btn-sm btn-info btn-icon" data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="" data-ajax-popup="true" data-size="lg" data-title="Crear salud"
-                                data-url="https://erp.alfabusiness.app/health/create/{!! $animal->id !!}"
-                                data-bs-original-title="Crear" aria-label="Crear">
-                                <i class="text-white ti ti-plus"></i> Registro Salud
-                            </a>
-                            <a class="btn btn-sm btn-primary btn-icon" data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="" data-ajax-popup="true" data-size="lg" data-title="Crear cría"
-                                data-url="https://erp.alfabusiness.app/breeding/create/{!! $animal->id !!}"
-                                data-bs-original-title="Crear" aria-label="Crear">
-                                <i class="text-white ti ti-plus"></i> Agregar Cría
-                            </a>
-                            <a class="btn btn-sm btn-primary btn-icon" data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="" data-ajax-popup="true" data-size="lg" data-title="Crear cría"
-                                data-url="https://erp.alfabusiness.app/weight/create/{!! $animal->id !!}"
-                                data-bs-original-title="Crear" aria-label="Crear">
-                                <i class="text-white ti ti-plus"></i> Agregar Peso
-                            </a>
-                            <a class="btn btn-sm btn-primary btn-icon" data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="" data-ajax-popup="true" data-size="lg" data-title="Crear cría"
-                                data-url="https://erp.alfabusiness.app/vaccinations/create/{!! $animal->id !!}"
-                                data-bs-original-title="Crear" aria-label="Crear">
-                                <i class="text-white ti ti-plus"></i> Agregar Vacuna
-                            </a>
-                            <a class="btn btn-sm btn-primary btn-icon" data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="" data-ajax-popup="true" data-size="md"
-                                data-title="Crear programa de alimentación"
-                                data-url="https://erp.alfabusiness.app/feeds_schedule/create/{!! $animal->id !!}"
-                                data-bs-original-title="Crear" aria-label="Crear">
-                                <i class="text-white ti ti-plus"></i> Agregar Horario de Alimentación
-                            </a>
-                            <a class="btn btn-sm btn-primary btn-icon" data-bs-toggle="tooltip" data-bs-placement="top"
-                                title="" data-ajax-popup="true" data-size="md"
-                                data-title="Crear programa de alimentación"
-                                data-url="https://erp.alfabusiness.app/feeds_consumption/create/{!! $animal->id !!}"
-                                data-bs-original-title="Crear" aria-label="Crear">
-                                <i class="text-white ti ti-plus"></i> Registrar Alimento
-                            </a>
-                        </div>
+                    <!-- Acciones y vitas animal -->
+                    <div class="mt-2 row items-align-center text-center">
+						<div class="col-md-8">
+								<a class="btn btn-sm btn-warning btn-icon m-2 text-white" data-bs-toggle="tooltip"
+									data-bs-placement="top" title="" data-ajax-popup="true" data-size="lg"
+									data-title="Editar animales"
+									data-url="https://erp.alfabusiness.app/animal/{!! $animal->id !!}/edit"
+									data-bs-original-title="Editar" aria-label="Editar">
+									<i class="text-white ti ti-pencil"></i> Editar a {!! !empty($animal->name) ? $animal->name : '--' !!}
+								</a>
+								<a class="btn btn-sm btn-primary btn-icon m-2 text-white" data-bs-toggle="tooltip" data-bs-placement="top"
+									title="" 
+									href="https://erp.alfabusiness.app/health/?animal_id={!! $animal->id !!}"
+									data-bs-original-title="Ver" aria-label="Crear">
+									<i class="text-white ti ti-eye"></i> Ver Salud
+								</a>
+								<a class="btn btn-sm btn-primary btn-icon m-2 text-white" data-bs-toggle="tooltip" data-bs-placement="top"
+									title="" href="https://erp.alfabusiness.app/breeding/?animal_id={!! $animal->id !!}"
+									data-bs-original-title="Ver" aria-label="Crear">
+									<i class="text-white ti ti-eye"></i> Ver Crías
+								</a>
+								<a class="btn btn-sm btn-primary btn-icon m-2 text-white" data-bs-toggle="tooltip" data-bs-placement="top"
+									title="" href="https://erp.alfabusiness.app/weight/?animal_id={!! $animal->id !!}"
+									data-bs-original-title="Ver" aria-label="Crear">
+									<i class="text-white ti ti-eye"></i> Ver Peso
+								</a>
+								<a class="btn btn-sm btn-primary btn-icon m-2 text-white" data-bs-toggle="tooltip" data-bs-placement="top"
+									title="" href="https://erp.alfabusiness.app/vaccinations/?animal_id={!! $animal->id !!}"
+									data-bs-original-title="Ver" aria-label="Crear">
+									<i class="text-white ti ti-eye"></i> Ver Vacunas
+								</a>
+								<a class="btn btn-sm btn-primary btn-icon m-2 text-white" data-bs-toggle="tooltip" data-bs-placement="top"
+									title="" href="https://erp.alfabusiness.app/feeds_schedule/?animal_id={!! $animal->id !!}"
+									data-bs-original-title="Ver" aria-label="Crear">
+									<i class="text-white ti ti-eye"></i> Ver Horarios de Alimentación
+								</a>
+								<a class="btn btn-sm btn-primary btn-icon m-2 text-white" data-bs-toggle="tooltip" data-bs-placement="top"
+									title="" href="https://erp.alfabusiness.app/feeds_consumption/?animal_id={!! $animal->id !!}"
+									data-bs-original-title="Ver" aria-label="Crear">
+									<i class="text-white ti ti-eye"></i> Ver Alimento
+								</a>	
+							</div>
+							<div class="col-md-4">
+								<div class="text-center">
+									<img id="qrImage" class="img-fluid p-1" 
+										 title="QR de la página actual" 
+										 src="https://api.qrserver.com/v1/create-qr-code/?data={{ urlencode(url()->current()) }}&size=150x150" 
+										 alt="Código QR de la página">
+									<br>
+									<button id="shareBtn" class="btn btn-primary mt-3">Compartir QR</button>
+								</div>
+							</div>
                     </div>
+
+
+
+
                     <div class="mt-2 row" style="display: none">
                         <div class="col-md-12">
                             <div class="row">
@@ -254,6 +262,29 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+document.getElementById('shareBtn').addEventListener('click', function() {
+    // URL actual o la del código QR
+    const currentUrl = window.location.href;
+    const qrUrl = document.getElementById('qrImage').src;
+
+    // Puedes compartir el enlace actual o el de la imagen QR
+    if (navigator.share) {
+        navigator.share({
+            title: 'QR de esta página',
+            text: 'Mira el QR de esta página',
+            url: currentUrl, // O reemplázalo por qrUrl para compartir la imagen
+        })
+        .then(() => console.log('Compartido con éxito'))
+        .catch((error) => console.error('Error al compartir:', error));
+    } else {
+        alert('La API de compartir no está soportada en este navegador.');
+    }
+});
+</script>
+@endpush
 
 @push('scripts')
     <script src="{{ asset('js/jquery.min.js') }}"></script>

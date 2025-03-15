@@ -1,3 +1,29 @@
+@php
+    // Asignar los valores directamente para el estado de salud y estado reproductivo
+    $healthStatusOptions = [
+        0 => 'Healthy',
+        1 => 'Injured',
+        2 => 'Sick'
+    ];
+    $breedingOptions = [
+        0 => 'Ready for Brending',
+        1 => 'Embarazada',
+        2 => 'Not ready'
+    ];
+
+    // Asignar las traducciones (manteniendo las mismas claves)
+    $translatedHealthStatusOptions = [
+        0 => 'Saludable',
+        1 => 'Herido',
+        2 => 'Enfermo'
+    ];
+    $translatedBreedingOptions = [
+        0 => 'Listo para reproducción',
+        1 => 'Embarazada',
+        2 => 'No listo'
+    ];
+@endphp
+
 {{ Form::model($animal, array('route' => array('animal.update', $animal->id), 'method' => 'PUT','enctype'=>'multipart/form-data','class'=>'needs-validation','novalidate')) }}
     <div class="modal-body">
         <div class="tab-content tab-bordered">
@@ -25,7 +51,8 @@
                     </div>
                     <div class="col-6 form-group">
                         {{ Form::label('health_status', __('Health Status'), ['class'=>'form-label']) }}<x-required></x-required>
-                        {{ Form::select('health_status', $healthStatusOptions, null, array('class' => 'form-control','required'=>'required')) }}
+                        <!-- Se utiliza el array traducido para Estado de Salud -->
+                        {{ Form::select('health_status', $translatedHealthStatusOptions, null, array('class' => 'form-control','required'=>'required')) }}
                     </div>
                     <div class="col-6 form-group">
                         {{ Form::label('weight', __('Weight'), ['class'=>'form-label']) }}<x-required></x-required>
@@ -33,7 +60,8 @@
                     </div>
                     <div class="col-6 form-group">
                         {{ Form::label('breeding', __('Breeding Status'), ['class'=>'form-label']) }}<x-required></x-required>
-                        {{ Form::select('breeding', $breedingOptions, null, array('class' => 'form-control','required'=>'required')) }}
+                        <!-- Se utiliza el array traducido para Estado Reproductivo -->
+                        {{ Form::select('breeding', $translatedBreedingOptions, null, array('class' => 'form-control','required'=>'required')) }}
                     </div>
                     <div class="col-6 form-group">
                         {{ Form::label('note', __('Notes/Comments'), ['class'=>'form-label']) }}<x-required></x-required>
@@ -53,12 +81,15 @@
                         @endphp
                         <img class="mt-3" id="blah" src="{{ $path }}" alt="your image" width="100" height="100" />
                     </div>
-
-                    <!-- Nuevos campos -->
-                    <div class="col-6 form-group">
-                        {{ Form::label('nombre_propietario_animal', __('Owner Name'), ['class'=>'form-label']) }}
-                        {{ Form::text('nombre_propietario_animal', null, array('class' => 'form-control','placeholder'=>'Enter Owner Name')) }}
-                    </div>
+                    <!-- Por esto: -->
+					<div class="col-6 form-group">
+						{{ Form::label('nombre_propietario_animal', __('Owner Name'), ['class'=>'form-label']) }}
+						{{ Form::select('nombre_propietario_animal', $customers, $animal->nombre_propietario_animal, [
+							'class'       => 'form-control',
+							'placeholder' => __('Select Owner'),
+							'required'    => 'required'
+						]) }}
+					</div>
                     <div class="col-6 form-group">
                         {{ Form::label('notas_dieta_animal', __('Diet Notes'), ['class'=>'form-label']) }}
                         {{ Form::text('notas_dieta_animal', null, array('class' => 'form-control','placeholder'=>'Enter Diet Notes')) }}
@@ -78,7 +109,6 @@
                             'PORTATILES'  => 'PORTATILES'
                         ], null, array('class' => 'form-control','placeholder'=>'Select Facility')) }}
                     </div>
-
                 </div>
             </div>
         </div>

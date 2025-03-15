@@ -2,6 +2,7 @@
 
 namespace Workdo\DairyCattleManagement\Http\Controllers;
 
+use Workdo\Account\Entities\Customer;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,17 +31,27 @@ class AnimalController extends Controller
      * @return Renderable
      */
     public function create()
-    {
-        if (Auth::user()->isAbleTo('animal create')) {
+	{
+		if (Auth::user()->isAbleTo('animal create')) {
 
-            $healthStatusOptions = Animal::$healthstatus;
-            $breedingOptions = Animal::$breedingstatus;
+			 // Listado de clientes de la tabla "customers"
+			// KEY = customer_id, VALUE = name
+			$customers = Customer::pluck('name', 'customer_id');
 
-            return view('dairy-cattle-management::animal.create', compact('healthStatusOptions', 'breedingOptions'));
-        } else {
-            return redirect()->back()->with('error', __('Permission denied.'));
-        }
-    }
+			$healthStatusOptions = Animal::$healthstatus;
+			$breedingOptions     = Animal::$breedingstatus;
+
+			// <-- AÑADE 'clients' aquí
+			return view('dairy-cattle-management::animal.create', compact(
+				'healthStatusOptions',
+				'breedingOptions',
+				'customers'
+			));
+		} else {
+			return redirect()->back()->with('error', __('Permission denied.'));
+		}
+	}
+
 
     /**
      * Store a newly created resource in storage.
@@ -144,8 +155,11 @@ class AnimalController extends Controller
             $healthStatusOptions = Animal::$healthstatus;
             $breedingOptions = Animal::$breedingstatus;
             $animal = Animal::find($id);
+			
+			// Lista de clientes: clave = customer_id, valor = name
+        	$customers = Customer::pluck('name', 'customer_id');
 
-            return view('dairy-cattle-management::animal.edit', compact('healthStatusOptions', 'breedingOptions', 'animal'));
+            return view('dairy-cattle-management::animal.edit', compact('healthStatusOptions', 'breedingOptions', 'animal','customers'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }

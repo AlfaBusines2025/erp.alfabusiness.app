@@ -156,6 +156,11 @@ $company_settings['proposal_shipping_display'] = isset($company_settings['propos
                   <button class="nav-link " id="statement-tab" data-bs-toggle="pill" data-bs-target="#statement"
                      type="button">{{ __('Statement') }}</button>
                </li>
+				@if (module_is_active('DairyCattleManagement'))
+				<li class="nav-item" role="presentation">
+                  <a class="nav-link" href="https://erp.alfabusiness.app/animal/?customer_id={{ $customer['customer_id'] }}" >{{ __('Animals') }}</a>
+               </li>
+				@endif
             </ul>
          </div>
       </div>

@@ -97,6 +97,10 @@ class AnimalDataTable extends DataTable
     public function query(Animal $model): QueryBuilder
     {
         $animals = $model->where('workspace', getActiveWorkSpace())->where('created_by', creatorId());
+		// Filtrar si existe el parámetro 'animal_id' en la URL 
+		if (request()->has('customer_id')) { 
+			$animals->where('nombre_propietario_animal', request()->query('customer_id')); 
+		}
         return $animals;
     }
 

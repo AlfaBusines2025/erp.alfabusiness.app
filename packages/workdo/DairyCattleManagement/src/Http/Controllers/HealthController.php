@@ -20,7 +20,7 @@ class HealthController extends Controller
      * Display a listing of the resource.
      * @return Renderable
      */
-    public function index(HealthDataTable $dataTable)
+    public function index(HealthDataTable $dataTable, Request $request)
     {
         if (Auth::user()->isAbleTo('health manage')) {
             return $dataTable->render('dairy-cattle-management::health.index');

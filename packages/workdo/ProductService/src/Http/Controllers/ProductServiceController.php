@@ -65,8 +65,8 @@ class ProductServiceController extends Controller
                 $product_type['consignment'] = 'Consignment';
             }
 
-
-            return $dataTable->render('product-service::index',compact('category','product_type'));
+			$products = ProductService::all();
+            return $dataTable->render('product-service::index',compact('category','product_type','products'));
         }
         else
         {
@@ -432,7 +432,8 @@ class ProductServiceController extends Controller
         }
     }
 
-    /**
+    
+	/**
      * Update the specified resource in storage.
      * @param Request $request
      * @param int $id
@@ -517,6 +518,8 @@ class ProductServiceController extends Controller
         }
     }
 
+	
+	
     public function grid(Request $request)
     {
         if(Auth::user()->isAbleTo('product&service manage'))

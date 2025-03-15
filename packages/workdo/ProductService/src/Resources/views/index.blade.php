@@ -39,6 +39,7 @@
 @endsection
 @section('content')
     <div class="row">
+
         <div class="col-sm-12">
             <div class=" multi-collapse mt-2" id="multiCollapseExample1">
                 <div class="card">
