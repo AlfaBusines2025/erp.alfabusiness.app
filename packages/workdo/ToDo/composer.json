@@ -1,0 +1,25 @@
+{
+    "name": "workdo/to-do",
+    "description": "Description for to-do package",
+    "type": "library",
+    "license": "MIT",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Workdo\\ToDo\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "WorkDo",
+            "email": "support@workdo.io"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Workdo\\ToDo\\Providers\\ToDoServiceProvider"
+            ]
+        }
+    }
+}

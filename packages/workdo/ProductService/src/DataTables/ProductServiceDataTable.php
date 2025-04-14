@@ -26,7 +26,7 @@ class ProductServiceDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         // Definición de columnas a usar: se agrega 'consumed'
-        $rowColumn = ['image', 'sale_price', 'purchase_price', 'tax_id', 'category_id', 'unit_id', 'quantity', 'consumed'];
+        $rowColumn = ['image', 'sale_price', 'purchase_price', 'tax_id', 'category_id', 'unit_id', 'quantity']; //, 'consumed'
 
         $dataTable = (new EloquentDataTable($query))
             ->addIndexColumn()
@@ -72,11 +72,13 @@ class ProductServiceDataTable extends DataTable
             // La columna "quantity" mostrará el valor real (el accessor getQuantityAttribute se encarga de restar lo consumido)
             ->editColumn('quantity', function (ProductService $productService) {
                 return $productService->quantity;
-            })
+            });
+			/*
             // Nueva columna: "consumed" muestra lo consumido
             ->addColumn('consumed', function (ProductService $productService) {
                 return $productService->getTotalConsumed();
-            });
+            })
+			*/
 
         if (\Laratrust::hasPermission('product&service delete') || \Laratrust::hasPermission('product&service edit')) {
             $dataTable->addColumn('action', function (ProductService $productService) {
@@ -258,7 +260,7 @@ class ProductServiceDataTable extends DataTable
             Column::make('unit_id')->title(__('Unit')),
             Column::make('quantity')->title(__('Quantity')),
             // Nueva columna para mostrar lo consumido
-            Column::make('consumed')->title(__('Consumed')),
+            //Column::make('consumed')->title(__('Consumed')),
             Column::make('type')->title(__('Type')),
             Column::computed('action')
                 ->exportable(false)
